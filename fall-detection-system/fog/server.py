@@ -20,7 +20,7 @@ manager = AlertManager( # escalation policy (critiera)
 
 # mqtt config
 import os
-mqtt_broker = os.getenv("mqtt_broker", "127.0.0.1")
+MQTT_BROKER = os.getenv("MQTT_BROKER", "127.0.0.1")
 mqtt_port = 1883
 mqtt_topic = "team17/edge/+/alert"
 
@@ -53,7 +53,7 @@ def mqtt_thread():
     client = mqtt.Client(client_id="fog-node")
     client.on_connect = on_connect
     client.on_message = on_message
-    client.connect(mqtt_broker, mqtt_port, keepalive=60)
+    client.connect(MQTT_BROKER, mqtt_port, keepalive=60)
     client.loop_forever()
 
 @app.on_event("startup")
