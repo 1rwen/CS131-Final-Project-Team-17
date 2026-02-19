@@ -4,7 +4,7 @@ from dataclasses import dataclass, asdict
 from typing import Dict, List, Optional, Tuple, Any
 import time
 import threading
-import requests  # ✅ correct
+import requests 
 
 @dataclass
 class Alert:
@@ -21,7 +21,7 @@ class Escalation:
     escalation_id: str
     timestamp: float
     reason: str
-    involved_devices: List[str]
+    involved_devices: List[str] # might not be needed due to only using one webcam
     max_confidence: float
     related_alert_ids: List[str]
 
@@ -29,15 +29,15 @@ class AlertManager:
     def __init__(
         self,
         confidence_escalate: float = 0.80,
-        multi_device_window_sec: float = 8.0,
-        multi_device_count: int = 2,
+        # multi_device_window_sec: float = 8.0, // reconsider multi due to only having one camera
+        # multi_device_count: int = 2,
         escalation_cooldown_sec: float = 15.0,
         max_alerts: int = 500,
-        cloud_url: str = "http://localhost:9000/event",  # ✅ configurable
+        cloud_url: str = "http://localhost:9000/event", 
     ):
         self.confidence_escalate = confidence_escalate
-        self.multi_device_window_sec = multi_device_window_sec
-        self.multi_device_count = multi_device_count
+        # self.multi_device_window_sec = multi_device_window_sec
+        # self.multi_device_count = multi_device_count
         self.escalation_cooldown_sec = escalation_cooldown_sec
         self.max_alerts = max_alerts
         self.cloud_url = cloud_url
@@ -115,7 +115,6 @@ class AlertManager:
                 if len(self._escalations) > 200:
                     self._escalations = self._escalations[-200:]
 
-                # ✅ actually forward to cloud
                 self.forward_to_cloud(esc)
 
             return alert
@@ -136,24 +135,8 @@ class AlertManager:
                 related_alert_ids=[new_alert.alert_id],
             )
 
-        window_start = new_alert.timestamp - self.multi_device_window_sec
-        window_alerts = [a for a in self._alerts if a.timestamp >= window_start and a.event == new_alert.event]
-
-        devices = sorted({a.device_id for a in window_alerts})
-        if len(devices) >= self.multi_device_count:
-            max_conf = max(a.confidence for a in window_alerts)
-            ids = [a.alert_id for a in window_alerts]
-            self._last_escalation_ts = now
-            return Escalation(
-                escalation_id=self._make_escalation_id(),
-                timestamp=now,
-                reason=f"multi_device>={self.multi_device_count} within {self.multi_device_window_sec}s",
-                involved_devices=devices,
-                max_confidence=max_conf,
-                related_alert_ids=ids,
-            )
-
         return None
+
 
     def get_alerts(self, limit: int = 50) -> List[Dict[str, Any]]:
         with self._lock:
