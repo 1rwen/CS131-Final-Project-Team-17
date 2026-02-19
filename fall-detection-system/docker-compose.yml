@@ -1,8 +1,8 @@
-version: "3.8"
+version: "2.2"
 
 services:
   mqtt:
-    image: eclipse-mosquitto
+    image: eclipse-mosquitto:1.6
     ports:
       - "1883:1883"
 
@@ -13,6 +13,18 @@ services:
     depends_on:
       - mqtt
     environment:
-      - MQTT_BROKER=mqtt
+      - PYTHONUNBUFFERED=1
+      - mqtt_broker=mqtt
     ports:
       - "8000:8000"
+    command: uvicorn fog.server:app --host 0.0.0.0 --port 8000
+
+
+  cloud:
+    build:
+      context: .
+      dockerfile: docker/cloud.Dockerfile
+    depends_on:
+      - fog
+    ports:
+      - "8501:8501" #streamlit address

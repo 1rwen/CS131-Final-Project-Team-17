@@ -1,4 +1,3 @@
-# fog/server.py
 from fastapi import FastAPI
 from pydantic import BaseModel
 import threading
@@ -24,6 +23,7 @@ mqtt_broker = os.getenv("mqtt_broker", "127.0.0.1")
 mqtt_port = 1883
 mqtt_topic = "team17/edge/+/alert"
 
+recent_alerts = []
 
 class AlertPayload(BaseModel): # defines the schema of oncoming alerts
     device_id: str
@@ -48,6 +48,10 @@ def on_message(client, userdata, msg):
     Stored = manager.ingest(payload, topic=msg.topic)
     if Stored:
         print(f"[FOG] Stored alert from {payload.get('device_id')} conf={payload.get('confidence')}")
+        recent_alerts.append(payload)
+        # only display 10 recent alerts
+        if len(recent_alerts) > 10:
+            recent_alerts.pop(0)
 
 def mqtt_thread():
     client = mqtt.Client(client_id="fog-node")
@@ -60,3 +64,7 @@ def mqtt_thread():
 def startup():
     t = threading.Thread(target=mqtt_thread, daemon=True)
     t.start()
+
+@app.get("/alerts")
+def get_alerts():
+    return {"status": "success", "total_alerts": len(recent_alerts), "alerts": recent_alerts}

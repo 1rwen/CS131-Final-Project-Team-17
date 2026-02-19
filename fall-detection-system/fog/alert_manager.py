@@ -55,20 +55,7 @@ class AlertManager:
         return f"esc:{int(time.time()*1000)}"
 
     def forward_to_cloud(self, esc: Escalation) -> None:
-        """Send escalation to cloud. Safe to fail (fog should still function)."""
-        try:
-            requests.post(
-                self.cloud_url,
-                json={
-                    "timestamp": esc.timestamp,
-                    "reason": esc.reason,
-                    "involved_devices": esc.involved_devices,
-                    "max_confidence": esc.max_confidence,
-                },
-                timeout=2,
-            )
-        except Exception as e:
-            print("Cloud forward failed:", e)
+        pass #bypass bc cloud streamlit pulls data
 
     def _dedupe_key(self, device_id: str, event: str, ts: float) -> Tuple[str, str, int]:
         return (device_id, event, int(ts))
