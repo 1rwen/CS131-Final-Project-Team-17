@@ -4,7 +4,9 @@ import mediapipe as mp
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
 
-cap = cv2.VideoCapture("v4l2src device=/dev/video0 ! video/x-raw, width=640, height=480 ! videoconvert ! appsink", cv2.CAP_GSTREAMER)
+cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 while True:
     ret, frame = cap.read()
