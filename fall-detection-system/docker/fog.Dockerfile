@@ -2,8 +2,14 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY ../fog /app/fog
+COPY ./fog /app/fog
+COPY ./shared /app/shared
 
-RUN pip install fastapi uvicorn paho-mqtt
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    paho-mqtt \
+    requests \
+    pydantic
 
-CMD ["uvicorn", "fog.server:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "fog.server"]
