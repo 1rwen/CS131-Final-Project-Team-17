@@ -1,4 +1,4 @@
-version: "2.2"
+version: "2.3" # Upgraded to 2.3 to support 'runtime: nvidia' properly
 
 services:
   mqtt:
@@ -19,7 +19,6 @@ services:
       - "8000:8000"
     command: uvicorn fog.server:app --host 0.0.0.0 --port 8000
 
-
   cloud:
     build:
       context: .
@@ -27,4 +26,5 @@ services:
     depends_on:
       - fog
     ports:
-      - "8501:8501" #streamlit address
+      - "8501:8501" # Streamlit address
+    network_mode: "host"
